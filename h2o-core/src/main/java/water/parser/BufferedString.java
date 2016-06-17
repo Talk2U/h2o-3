@@ -7,6 +7,11 @@ import water.Iced;
 import java.util.Arrays;
 import java.util.Formatter;
 
+/**
+ * A mutable wrapper to hold String as a byte array.
+ *
+ * Warning: This datastructure is not designed for parallel access!
+ */
 public class BufferedString extends Iced implements Comparable<BufferedString> {
    private byte [] _buf;
    private int _off;
@@ -30,6 +35,7 @@ public class BufferedString extends Iced implements Comparable<BufferedString> {
   public final BufferedString read_impl(AutoBuffer ab){
     _buf = ab.getA1();
     if(_buf != null) _len = _buf.length;
+    _hash = 0;
     return this;
   }
 
@@ -51,7 +57,7 @@ public class BufferedString extends Iced implements Comparable<BufferedString> {
      return (_hash=hash);       // Racey monotonic write
    }
 
-   void addChar(){_len++;}
+   void addChar(){_len++; _hash = 0; }
 
    void addBuff(byte [] bits){
      byte [] buf = new byte[_len];
@@ -60,6 +66,7 @@ public class BufferedString extends Iced implements Comparable<BufferedString> {
      System.arraycopy(bits, 0, buf, l1, _len-l1);
      _off = 0;
      _buf = buf;
+     _hash = 0;
    }
 
 
@@ -120,6 +127,7 @@ public class BufferedString extends Iced implements Comparable<BufferedString> {
     _buf = buf;
     _off = off;
     _len = len;
+    _hash = 0;
     return this;                // Flow coding
   }
 
@@ -127,9 +135,10 @@ public class BufferedString extends Iced implements Comparable<BufferedString> {
     _buf = what.getBytes(Charsets.UTF_8);
     _off = 0;
     _len = _buf.length;
+    _hash = 0;
     return this;
   }
-  public void setOff(int off) { _off=off; }
+  public void setOff(int off) { _off=off; _hash = 0; }
 
   @Override public boolean equals(Object o){
     if(o instanceof BufferedString) {
